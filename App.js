@@ -2,36 +2,33 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useState, useEffect } from "react";
 import { View, Text } from "react-native";
+//PAGES
 import AuthLanding from "./src/Components/auth/AuthLanding";
+import MainScreen from "./src/Components/Main";
 import Register from "./src/Components/auth/Register";
 import Login from "./src/Components/auth/Login";
-import firebase from "firebase/compat/app";
-import "firebase/compat/auth";
-import "firebase/compat/firestore";
-import "firebase/compat/database";
+import Add from "./src/Components/main/Add";
+import Save from "./src/Components/main/Save";
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDKSA5nN9tkCNL6-oAgAsT4GDyww-b8DGQ",
-  authDomain: "instagramclone-42c2c.firebaseapp.com",
-  projectId: "instagramclone-42c2c",
-  storageBucket: "instagramclone-42c2c.appspot.com",
-  messagingSenderId: "138511774575",
-  appId: "1:138511774575:web:7cf1fe85725c998f596e9a",
-};
+//FIREBASE
+import { useFirebase } from "./useFirebase";
+import { onAuthStateChanged } from "firebase/auth";
+//REDUX
+import { Provider } from "react-redux";
+import { store } from "./src/Redux/store";
 
-// Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-
+// =============== APP ======================
 export default function App() {
+  const { auth } = useFirebase();
+
   const [loaded, setLoaded] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
-    firebase.auth.OnAuthStateChanged((user) => {
+    onAuthStateChanged(auth, (user) => {
       if (!user) {
         setLoggedIn(false);
-        setLoaded(false);
+        setLoaded(true);
       } else {
         setLoaded(true);
         setLoggedIn(true);
@@ -42,23 +39,54 @@ export default function App() {
   if (!loaded) {
     return (
       <View style={{ flex: 1, justifyContent: "center" }}>
-        <Text>Loading</Text>
+        <Text style={{ alignSelf: "center", fontSize: 30 }}>Loading</Text>
       </View>
     );
   }
+
+  const Stack = createNativeStackNavigator();
+
+  if (loaded && !loggedIn) {
+    return (
+      <Provider store={store}>
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="Landing">
+            <Stack.Screen
+              name="Landing"
+              component={AuthLanding}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="Register" component={Register} />
+            <Stack.Screen name="Login" component={Login} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </Provider>
+    );
+  }
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Landing">
-        <Stack.Screen
-          name="Landing"
-          component={AuthLanding}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen name="Register" component={Register} />
-        <Stack.Screen name="Login" component={Login} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Main">
+          <Stack.Screen
+            name="Main"
+            component={MainScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Add"
+            component={Add}
+            option={{ headerShown: true }}
+            // navigation={navigation}
+          />
+          <Stack.Screen
+            name="Save"
+            component={Save}
+            option={{ headerShown: true }}
+            // navigation={navigation}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
   );
 }
-
-const Stack = createNativeStackNavigator();
