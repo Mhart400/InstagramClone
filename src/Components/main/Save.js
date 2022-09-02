@@ -4,6 +4,8 @@ import { TextInput, Button } from "react-native-paper";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useFirebase } from "../../../useFirebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useDispatch } from "react-redux";
+import { fetchUserPosts } from "../../Redux/userSlice";
 
 export default function Save(props) {
   // Create the file metadata
@@ -12,6 +14,7 @@ export default function Save(props) {
     contentType: "image/jpeg",
   };
 
+  const dispatch = useDispatch();
   const [caption, setCaption] = useState("");
   const [progressPercent, setProgressPercent] = useState(0);
   const { auth, db, storage } = useFirebase();
@@ -23,6 +26,7 @@ export default function Save(props) {
         caption,
         creationDate: serverTimestamp(),
       });
+      dispatch(fetchUserPosts()); //update user posts in redux store
     } catch (e) {
       console.log(e);
     }

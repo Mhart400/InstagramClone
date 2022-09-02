@@ -12,10 +12,12 @@ export default function Feed() {
   useEffect(() => {
     console.log("Fetching user posts");
     dispatch(fetchUserPosts());
-    // console.log(posts);
+    console.log(posts);
   }, []);
 
-  console.log(`Returned ${posts.length} posts`);
+  if (posts.length) {
+    console.log(`Returned ${posts.length} posts`);
+  }
 
   return (
     <View style={{ flex: 1 }}>

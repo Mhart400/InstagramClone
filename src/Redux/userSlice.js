@@ -21,8 +21,9 @@ const initialState = {
 /* Get the user data */
 export const fetchUser = createAsyncThunk("user/fetchUser", async () => {
   try {
-    const { auth, db } = useFirebase();
+    const { db, auth } = useFirebase();
     const response = await getDoc(doc(db, "users", auth.currentUser.uid));
+    console.log(response.data());
     return response.data();
   } catch (e) {
     throw Error(e);
@@ -34,14 +35,17 @@ export const fetchUserPosts = createAsyncThunk(
   "user/fetchUserPosts",
   async () => {
     try {
-      const { auth, db } = useFirebase();
+      const { db, auth } = useFirebase();
       const q = query(
-        collection(db, "posts", auth.currentUser.uid, "userPosts")
+        collection(db, "posts", auth.currentUser.uid, "userPosts"),
+        orderBy("creationDate", "desc")
       );
       let docList = [];
-      const querySnapshot = await getDocs(q, orderBy("creationDate", "desc"));
+      const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
-        const newDoc = { id: doc.id, data: doc.data() };
+        const timestamp = doc.data().creationDate.toDate().getTime();
+        const data = { ...doc.data(), creationDate: timestamp };
+        const newDoc = { id: doc.id, data: data };
         docList = [...docList, newDoc];
       });
       return docList;

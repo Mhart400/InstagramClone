@@ -3,14 +3,16 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchUser } from "../Redux/userSlice";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useFirebase } from "../../useFirebase";
 
-import Settings from "./main/Settings";
+import Profile from "./main/Profile";
 import Feed from "./main/Feed";
+import Search from "./main/Search";
 
 export default function Main() {
   const userData = useSelector((state) => state.user.userData);
   const dispatch = useDispatch();
-
+  const { auth } = useFirebase();
   // Update the state with userData
   useEffect(() => {
     dispatch(fetchUser());
@@ -61,10 +63,20 @@ export default function Main() {
         }}
       />
       <Tab.Screen
-        name="Settings"
-        component={Settings}
+        name="Search"
+        component={Search}
         options={{
-          tabBarLabel: "Settings",
+          tabBarLabel: "Search",
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="magnify" color={color} size={26} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={Profile}
+        options={{
+          tabBarLabel: "Profile",
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons
               name="face-man-profile"
@@ -73,6 +85,12 @@ export default function Main() {
             />
           ),
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => {
+            event.preventDefault();
+            navigation.navigate("Profile", { uid: auth.currentUser.uid });
+          },
+        })}
       />
     </Tab.Navigator>
   );
